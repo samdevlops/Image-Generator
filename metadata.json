@@ -1,0 +1,5 @@
+{
+  "name": "Gemini AI Photo & Video Studio",
+  "description": "An all-in-one creative suite to edit and analyze photos, generate new images from text, and create stunning videos from a single image, all powered by Google's Gemini API.",
+  "requestFramePermissions": []
+}
