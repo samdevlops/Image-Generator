@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Modality, GenerateContentResponse, Type } from "@google/genai";
 import { AspectRatio } from '../types';
 
@@ -84,7 +85,12 @@ export const generateVideo = async (
   let operation = await ai.models.generateVideos({
     model: 'veo-3.1-fast-generate-preview',
     prompt,
-    image: imagePart.inlineData,
+    // Fix: The `image` property for `generateVideos` requires an object with an `imageBytes` property.
+    // The previous code passed an object with a `data` property, causing a type mismatch.
+    image: {
+      imageBytes: imagePart.inlineData.data,
+      mimeType: imagePart.inlineData.mimeType,
+    },
     config: {
       numberOfVideos: 1,
       resolution: '720p',
@@ -121,5 +127,7 @@ export const generateVideo = async (
   }
 
   const blob = await response.blob();
-  return URL.createObjectURL(blob);
+  // Fix: Explicitly cast the result of `response.blob()` to `Blob`. This resolves a type error
+  // where the compiler may incorrectly infer the type as `unknown`.
+  return URL.createObjectURL(blob as Blob);
 };

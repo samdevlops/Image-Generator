@@ -28,6 +28,12 @@ const VideoCameraIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-
     </svg>
 );
 
+const XCircleIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+);
+
 const LoadingSpinner: React.FC = () => (
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400"></div>
 );
@@ -82,21 +88,22 @@ const App: React.FC = () => {
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
             const files = Array.from(event.target.files);
-            const newUploadedFiles = files.map(file => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
+            const newUploadedFilesPromises = files.map(file => {
                 return new Promise<UploadedFile>(resolve => {
+                    const reader = new FileReader();
                     reader.onload = () => {
+                        const dataUrl = reader.result as string;
                         resolve({
                             file,
-                            preview: URL.createObjectURL(file),
-                            base64: (reader.result as string).split(',')[1],
+                            preview: dataUrl,
+                            base64: dataUrl.split(',')[1],
                         });
                     };
+                    reader.readAsDataURL(file);
                 });
             });
 
-            Promise.all(newUploadedFiles).then(newFiles => {
+            Promise.all(newUploadedFilesPromises).then(newFiles => {
                 if (activeTab === TabMode.EDIT) {
                     setUploadedFiles(prev => [...prev, ...newFiles]);
                 } else {
@@ -104,6 +111,12 @@ const App: React.FC = () => {
                 }
             });
         }
+    };
+
+    const handleRemoveFile = (indexToRemove: number) => {
+        setUploadedFiles(currentFiles =>
+            currentFiles.filter((_, index) => index !== indexToRemove)
+        );
     };
     
     const onProgress = (message: string) => {
@@ -234,7 +247,16 @@ const App: React.FC = () => {
                                 {uploadedFiles.length > 0 && (
                                     <div className="mt-4 grid grid-cols-3 gap-2">
                                         {uploadedFiles.map((uf, index) => (
-                                            <img key={index} src={uf.preview} alt="upload preview" className="w-full h-24 object-cover rounded-md" />
+                                            <div key={index} className="relative group">
+                                                <img src={uf.preview} alt={`upload preview ${index + 1}`} className="w-full h-24 object-cover rounded-md" />
+                                                <button
+                                                    onClick={() => handleRemoveFile(index)}
+                                                    className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-200"
+                                                    aria-label={`Remove image ${index + 1}`}
+                                                >
+                                                    <XCircleIcon className="w-5 h-5" />
+                                                </button>
+                                            </div>
                                         ))}
                                     </div>
                                 )}

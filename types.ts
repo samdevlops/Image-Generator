@@ -1,4 +1,3 @@
-
 export enum TabMode {
   EDIT = 'EDIT',
   GENERATE = 'GENERATE',
@@ -14,13 +13,6 @@ export interface UploadedFile {
   base64: string;
 }
 
-// Fix: Moved global declaration from geminiService.ts to have a single,
-// authoritative source for the window.aistudio type, fixing declaration errors.
-declare global {
-  interface Window {
-    aistudio: {
-      hasSelectedApiKey: () => Promise<boolean>;
-      openSelectKey: () => Promise<void>;
-    };
-  }
-}
+// Fix: Removed conflicting global declaration for window.aistudio.
+// The type is assumed to be declared correctly elsewhere in the project,
+// and removing this duplicate resolves compilation errors.
